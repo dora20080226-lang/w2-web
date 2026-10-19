@@ -1,268 +1,106 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 
 <head>
     <meta charset="UTF-8">
     <title>AI 程式練習助手</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
-
     <div class="container">
 
         <h1>AI 程式練習助手</h1>
 
-        <p class="subtitle">
-            選擇一個 Python 學習主題，開始練習！
-        </p>
+        <p class="subtitle">選擇一個 Python 學習主題</p>
 
-        <h3>請選擇學習主題：</h3>
+        <form method="POST">
 
-        <div class="topics">
+            <h3>請選擇學習主題：</h3>
 
-            <label>
-                <input type="radio" name="topic" value="輸入輸出">
-                輸入輸出
-            </label>
+            <div class="topics">
+                <label>
+                    <input type="radio" name="topic"
+                           value="輸入輸出"
+                           {% if topic == "輸入輸出" %}checked{% endif %}>
+                    輸入輸出
+                </label>
 
-            <label>
-                <input type="radio" name="topic" value="條件判斷">
-                條件判斷
-            </label>
+                <label>
+                    <input type="radio" name="topic"
+                           value="條件判斷"
+                           {% if topic == "條件判斷" %}checked{% endif %}>
+                    條件判斷
+                </label>
 
-            <label>
-                <input type="radio" name="topic" value="迴圈">
-                迴圈
-            </label>
+                <label>
+                    <input type="radio" name="topic"
+                           value="迴圈"
+                           {% if topic == "迴圈" %}checked{% endif %}>
+                    迴圈
+                </label>
 
-            <label>
-                <input type="radio" name="topic" value="串列">
-                串列
-            </label>
+                <label>
+                    <input type="radio" name="topic"
+                           value="串列"
+                           {% if topic == "串列" %}checked{% endif %}>
+                    串列
+                </label>
+            </div>
 
-        </div>
-
-        <button class="main-btn" onclick="generateQuestion()">
-            幫我出題
-        </button>
-
-
-        <!-- 題目區域 -->
-        <div class="question-box">
-
-            <h2>AI 題目</h2>
-
-            <p id="question">
-                請先選擇學習主題，再按下「幫我出題」。
-            </p>
-
-        </div>
-
-
-        <!-- 作答區域 -->
-        <div class="answer-box">
-
-            <h2>我的答案</h2>
-
-            <textarea
-                id="answer"
-                placeholder="請在這裡輸入你的 Python 程式..."
-            ></textarea>
-
-            <button class="submit-btn" onclick="checkAnswer()">
-                提交答案
+            <button class="main-btn" type="submit"
+                    name="action" value="question">
+                幫我出題
             </button>
 
-        </div>
+            <div class="question-box">
+                <h2>AI 題目</h2>
+                <p>{{ question_text }}</p>
 
+                {% if topic == "輸入輸出" %}
+                    <p>A. input()</p>
+                    <p>B. print()</p>
+                    <p>C. len()</p>
+                    <p>D. range()</p>
 
-        <!-- 回饋區域 -->
-        <div class="feedback-box">
+                    <h3>請選擇你的答案：</h3>
 
-            <h2>AI 學習回饋</h2>
+                    <label>
+                        <input type="radio" name="student_answer"
+                               value="A"> A
+                    </label>
+                    <label>
+                        <input type="radio" name="student_answer"
+                               value="B"> B
+                    </label>
+                    <label>
+                        <input type="radio" name="student_answer"
+                               value="C"> C
+                    </label>
+                    <label>
+                        <input type="radio" name="student_answer"
+                               value="D"> D
+                    </label>
 
-            <p id="feedback">
-                完成題目後，按下「提交答案」查看回饋。
-            </p>
+                    <br><br>
 
-        </div>
+                    <button class="main-btn" type="submit"
+                            name="action" value="check">
+                        提交答案
+                    </button>
+                {% endif %}
+            </div>
+
+            <div class="feedback-box">
+                <h2>AI 學習回饋</h2>
+                <p>{{ feedback }}</p>
+            </div>
+
+        </form>
 
     </div>
-
-
-    <script>
-
-        // 題目資料
-        const questions = {
-
-            "輸入輸出": [
-                {
-                    question: "請寫一個 Python 程式，讓使用者輸入自己的名字，並輸出「你好，XXX！」。",
-                    answer: "input"
-                },
-                {
-                    question: "請寫一個 Python 程式，讓使用者輸入兩個數字，並輸出這兩個數字的總和。",
-                    answer: "input"
-                },
-                {
-                    question: "請寫一個 Python 程式，讓使用者輸入自己的年齡，並輸出「你今年 XX 歲」。",
-                    answer: "input"
-                }
-            ],
-
-            "條件判斷": [
-                {
-                    question: "請寫一個 Python 程式，讓使用者輸入一個數字，如果大於 0 輸出「正數」，小於 0 輸出「負數」，等於 0 輸出「零」。",
-                    answer: "if"
-                },
-                {
-                    question: "請寫一個 Python 程式，讓使用者輸入成績。如果成績大於等於 60，輸出「及格」，否則輸出「不及格」。",
-                    answer: "if"
-                },
-                {
-                    question: "請寫一個 Python 程式，讓使用者輸入年齡。如果年齡大於等於 18，輸出「成年」，否則輸出「未成年」。",
-                    answer: "if"
-                }
-            ],
-
-            "迴圈": [
-                {
-                    question: "請使用 Python 的 for 迴圈，輸出 1 到 10 的所有整數。",
-                    answer: "for"
-                },
-                {
-                    question: "請使用 Python 的 for 迴圈，輸出 1 到 5 的所有整數。",
-                    answer: "for"
-                },
-                {
-                    question: "請使用 Python 的 for 迴圈，將 1 到 10 的數字逐一輸出。",
-                    answer: "for"
-                }
-            ],
-
-            "串列": [
-                {
-                    question: "請建立一個包含 5 個水果名稱的 Python 串列，並使用 for 迴圈逐一輸出每個水果。",
-                    answer: "["
-                },
-                {
-                    question: "請建立一個包含 3 個數字的串列，例如 10、20、30，並輸出這個串列。",
-                    answer: "["
-                },
-                {
-                    question: "請建立一個包含三個科目名稱的 Python 串列，並使用 for 迴圈逐一輸出。",
-                    answer: "["
-                }
-            ]
-
-        };
-
-
-        // 記錄目前題目
-        let currentQuestion = null;
-
-
-        // 隨機出題
-        function generateQuestion() {
-
-            // 找出使用者選擇的主題
-            let selectedTopic =
-                document.querySelector('input[name="topic"]:checked');
-
-
-            // 如果沒有選主題
-            if (!selectedTopic) {
-
-                document.getElementById("question").innerText =
-                    "⚠️ 請先選擇一個學習主題！";
-
-                return;
-            }
-
-
-            // 取得主題名稱
-            let topic = selectedTopic.value;
-
-
-            // 取得這個主題的所有題目
-            let topicQuestions = questions[topic];
-
-
-            // 隨機選一題
-            let randomIndex =
-                Math.floor(Math.random() * topicQuestions.length);
-
-
-            currentQuestion = topicQuestions[randomIndex];
-
-
-            // 顯示題目
-            document.getElementById("question").innerText =
-                currentQuestion.question;
-
-
-            // 清空之前的答案
-            document.getElementById("answer").value = "";
-
-
-            // 清空之前的回饋
-            document.getElementById("feedback").innerText =
-                "請完成題目後，按下「提交答案」。";
-
-        }
-
-
-        // 提交答案
-        function checkAnswer() {
-
-            // 如果還沒有出題
-            if (!currentQuestion) {
-
-                document.getElementById("feedback").innerText =
-                    "⚠️ 請先選擇主題並按下「幫我出題」。";
-
-                return;
-            }
-
-
-            // 取得使用者輸入的答案
-            let userAnswer =
-                document.getElementById("answer").value.trim();
-
-
-            // 如果沒有輸入答案
-            if (userAnswer === "") {
-
-                document.getElementById("feedback").innerText =
-                    "⚠️ 你還沒有輸入答案，請先完成作答。";
-
-                return;
-            }
-
-
-            // 轉成小寫，方便判斷
-            let answerLower =
-                userAnswer.toLowerCase();
-
-
-            // 簡單判斷答案
-            if (answerLower.includes(currentQuestion.answer)) {
-
-                document.getElementById("feedback").innerText =
-                    "✅ 很好！你的答案看起來有使用正確的 Python 語法。可以再檢查一下程式是否能正常執行。";
-
-            } else {
-
-                document.getElementById("feedback").innerText =
-                    "💡 目前看起來可能需要再檢查一下。可以想想這一題需要使用哪一種 Python 語法。";
-
-            }
-
-        }
-
-    </script>
-
 </body>
 
 </html>
